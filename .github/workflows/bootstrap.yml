@@ -1,0 +1,14 @@
+name: Bootstrap Repository
+on: [push]
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      if: endsWith(github.ref, '/master') && github.repository != 'octodemo/octodemo.github.io' && github.repository != 'jonico/jonico.github.io'
+    - name: Bootstrap repo
+      run: ./scripts/bootstrap.sh
+      env:
+        GITHUB_COM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      if: endsWith(github.ref, '/master') && github.repository != 'octodemo/octodemo.github.io' && github.repository != 'jonico/jonico.github.io'

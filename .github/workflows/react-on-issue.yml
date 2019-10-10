@@ -1,0 +1,23 @@
+on: [issues]
+name: IssueOps
+jobs:
+  act-on-issue:
+    runs-on: ubuntu-latest
+    if:  github.event.action == 'opened' && ( startsWith(github.event.issue.title, 'demo') )
+    steps:
+      - name: Checkout if needed
+        uses: actions/checkout@v1
+      - name: Reset demo if a demo issue was opened
+        run: ./scripts/reset-demo.sh "${{ github.event.issue.body }}" "${{ github.event.issue.number }}"
+        env:
+          GITHUB_COM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OCTO_ORG: ${{ github.event.repository.owner.login }}
+          OCTO_REPO : ${{ github.event.repository.name }}
+          OCTO_UX_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create customer branch if a demo issue was opened
+        run: ./scripts/code-feature.sh "${{ github.event.issue.body }}" "${{ github.event.issue.number }}"
+        env:
+          GITHUB_COM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OCTO_ORG: ${{ github.event.repository.owner.login }}
+          OCTO_REPO : ${{ github.event.repository.name }}
+          OCTO_UX_TOKEN: ${{ secrets.GITHUB_TOKEN }}

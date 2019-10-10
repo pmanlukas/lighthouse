@@ -1,0 +1,26 @@
+name: Build and publish Docker image
+on: [pull_request]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '10.x'
+    - name: Test
+      run: |
+        npm install -g write-good 
+        write-good ${GITHUB_WORKSPACE}/README.md --parse
+    - name: Docker build, tag and push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GPR_PAT: ${{ secrets.GPR_PAT }}
+      run: | 
+        ./cleanup.sh
+        docker login -u ${GITHUB_ACTOR} -p ${GPR_PAT} docker.pkg.github.com
+        docker build -t docker.pkg.github.com/${GITHUB_REPOSITORY,,}/octocat-generator:${{ github.event.pull_request.head.ref }} .
+        # curl -s -H "Authorization: Token ${GITHUB_TOKEN}" -H "Accept: application/json" -H "Content-type: application/json" -X POST -d "{ \"ref\": \"refs/tags/v-${${{ github.event.pull_request.head.ref }}}\", \"sha\": \"${GITHUB_SHA}\"}" https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs
+        docker push docker.pkg.github.com/${GITHUB_REPOSITORY,,}/octocat-generator:${{ github.event.pull_request.head.ref }}
